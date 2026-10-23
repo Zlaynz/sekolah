@@ -1,0 +1,6 @@
+@SekolahApi_HostAddress = http://localhost:5026
+
+GET {{SekolahApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
