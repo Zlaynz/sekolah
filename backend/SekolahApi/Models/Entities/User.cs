@@ -10,6 +10,7 @@ namespace SekolahApi.Models.Entities
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public UserRole Role { get; set; }
+        public string? PhotoPath { get; set; }
 
         // Navigation properties
         public Teacher? Teacher { get; set; }

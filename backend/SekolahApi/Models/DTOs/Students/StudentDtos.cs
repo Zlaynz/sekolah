@@ -17,6 +17,7 @@ namespace SekolahApi.Models.DTOs.Students
         public StudentStatus Status { get; set; }
         public string? CurrentClassName { get; set; }
         public int? CurrentClassId { get; set; }
+        public string? PhotoPath { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 

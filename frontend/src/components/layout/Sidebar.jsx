@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { ROLES } from '../../utils/constants';
+import { ROLES, ROLE_LABELS } from '../../utils/constants';
+import UserAvatar from '../common/UserAvatar';
 import {
   LayoutDashboard,
   Users,
@@ -183,9 +184,21 @@ export default function Sidebar({ isOpen, onClose }) {
       </nav>
 
       {/* User profile footer pill */}
-      <div className="p-3 border-t border-gray-100 bg-gray-50/50">
-        <p className="text-xs text-gray-400">Hak Akses Aktif:</p>
-        <p className="text-xs font-bold text-indigo-700">{user?.role || 'Guest'}</p>
+      <div className="p-3 border-t border-gray-100 bg-gray-50/60 flex items-center gap-3">
+        <UserAvatar
+          photoPath={user?.photoPath}
+          name={user?.name || user?.username}
+          size="sm"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-bold text-gray-800 truncate leading-tight">
+            {user?.name || user?.username}
+          </p>
+          <p className="text-[10px] text-gray-500 font-medium">
+            {ROLE_LABELS[user?.role] || user?.role || 'Guest'}
+          </p>
+        </div>
+
       </div>
     </aside>
   );

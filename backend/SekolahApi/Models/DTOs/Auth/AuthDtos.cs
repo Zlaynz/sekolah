@@ -18,6 +18,7 @@ namespace SekolahApi.Models.DTOs.Auth
         public int? TeacherId { get; set; }
         public int? StudentId { get; set; }
         public int? ClassId { get; set; }
+        public string? PhotoPath { get; set; }
     }
 
     public class ChangePasswordDto
@@ -34,6 +35,6 @@ namespace SekolahApi.Models.DTOs.Auth
         public string DisplayName { get; set; } = string.Empty;
         public int? TeacherId { get; set; }
         public int? StudentId { get; set; }
+        public string? PhotoPath { get; set; }
     }
 }
-

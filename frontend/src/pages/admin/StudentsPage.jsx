@@ -3,8 +3,10 @@ import api from '../../api/axios';
 import DataTable from '../../components/common/DataTable';
 import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import UserAvatar from '../../components/common/UserAvatar';
+import PhotoUploadModal from '../../components/common/PhotoUploadModal';
 import toast from 'react-hot-toast';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Camera, AlertTriangle } from 'lucide-react';
 
 export default function StudentsPage() {
   const [data, setData] = useState([]);
@@ -18,6 +20,7 @@ export default function StudentsPage() {
   // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -119,6 +122,25 @@ export default function StudentsPage() {
   };
 
   const columns = [
+    {
+      key: 'photo',
+      label: 'Foto',
+      render: (_, row) => (
+        <div
+          onClick={() => {
+            setSelectedItem(row);
+            setIsPhotoModalOpen(true);
+          }}
+          className="cursor-pointer group flex items-center gap-1.5"
+          title="Klik untuk ubah foto siswa"
+        >
+          <UserAvatar photoPath={row.photoPath} name={row.fullName} size="sm" />
+          <span className="text-[11px] text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
+            Ubah
+          </span>
+        </div>
+      ),
+    },
     { key: 'nisn', label: 'NISN' },
     { key: 'nis', label: 'NIS' },
     { key: 'fullName', label: 'Nama Lengkap Siswa' },
@@ -154,7 +176,7 @@ export default function StudentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Data Siswa Terdaftar</h1>
-          <p className="text-sm text-gray-500">Pendaftaran NISN, NIS, data biodata, dan status akademik siswa</p>
+          <p className="text-sm text-gray-500">Pendaftaran NISN, NIS, foto profil, data biodata, dan status akademik siswa</p>
         </div>
         <button
           onClick={handleOpenCreate}
@@ -182,6 +204,16 @@ export default function StudentsPage() {
             <button
               onClick={() => {
                 setSelectedItem(row);
+                setIsPhotoModalOpen(true);
+              }}
+              title="Unggah / Ubah Foto Siswa"
+              className="text-gray-500 hover:text-indigo-600 p-1"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => {
+                setSelectedItem(row);
                 setNisn(row.nisn);
                 setNis(row.nis);
                 setFullName(row.fullName);
@@ -191,6 +223,7 @@ export default function StudentsPage() {
                 setStatus(row.status);
                 setIsModalOpen(true);
               }}
+              title="Edit Biodata Siswa"
               className="text-gray-500 hover:text-indigo-600 p-1"
             >
               <Edit className="w-4 h-4" />
@@ -200,6 +233,7 @@ export default function StudentsPage() {
                 setSelectedItem(row);
                 setIsConfirmOpen(true);
               }}
+              title="Hapus Data Siswa"
               className="text-gray-500 hover:text-red-600 p-1"
             >
               <Trash2 className="w-4 h-4" />
@@ -222,21 +256,21 @@ export default function StudentsPage() {
                 type="text"
                 required
                 maxLength={10}
-                placeholder="0081234567"
+                placeholder="Contoh: 0081234567"
                 value={nisn}
                 onChange={(e) => setNisn(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">NIS Lokal</label>
+              <label className="block text-sm font-medium text-gray-700">NIS</label>
               <input
                 type="text"
                 required
-                placeholder="232407001"
+                placeholder="Contoh: 242507001"
                 value={nis}
                 onChange={(e) => setNis(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>
           </div>
@@ -246,74 +280,73 @@ export default function StudentsPage() {
             <input
               type="text"
               required
-              placeholder="Contoh: Ahmad Dani Pratama"
+              placeholder="Contoh: Ahmad Dani"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Gender</label>
+              <label className="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
               <select
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               >
-                <option value="L">Laki-laki</option>
-                <option value="P">Perempuan</option>
+                <option value="L">Laki-laki (L)</option>
+                <option value="P">Perempuan (P)</option>
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Status Keaktifan</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
+                <option value="AKTIF">AKTIF</option>
+                <option value="LULUS">LULUS</option>
+                <option value="MUTASI">MUTASI</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700">Tempat Lahir</label>
               <input
                 type="text"
-                required
+                placeholder="Kota Lahir"
                 value={birthPlace}
                 onChange={(e) => setBirthPlace(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg sm:text-sm"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Tanggal Lahir</label>
               <input
                 type="date"
-                required
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg sm:text-sm"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Status Kesiswaan</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="AKTIF">AKTIF</option>
-              <option value="LULUS">LULUS</option>
-              <option value="MUTASI">MUTASI</option>
-            </select>
-          </div>
-
           {!selectedItem && (
-            <div className="pt-2 border-t border-gray-100 space-y-3">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Akun Siswa Untuk Melihat Rapor (Opsional)
-              </p>
+            <div className="pt-3 border-t border-gray-100 space-y-3">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kredensial Akun Siswa (Opsional)</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700">Username</label>
+                  <label className="block text-xs font-medium text-gray-700">Username Siswa</label>
                   <input
                     type="text"
-                    placeholder="siswa_ahmad"
+                    placeholder="Contoh: siswa_ahmad"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    className="mt-1 block w-full px-3 py-1.5 border border-gray-300 rounded-lg sm:text-sm"
                   />
                 </div>
                 <div>
@@ -323,18 +356,18 @@ export default function StudentsPage() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    className="mt-1 block w-full px-3 py-1.5 border border-gray-300 rounded-lg sm:text-sm"
                   />
                 </div>
               </div>
             </div>
           )}
 
-          <div className="pt-4 flex justify-end gap-2">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Batal
             </button>
@@ -342,31 +375,47 @@ export default function StudentsPage() {
               type="submit"
               className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold"
             >
-              Simpan
+              Simpan Data Siswa
             </button>
           </div>
         </form>
       </Modal>
+
+      {/* Photo Upload Modal */}
+      {selectedItem && (
+        <PhotoUploadModal
+          isOpen={isPhotoModalOpen}
+          onClose={() => setIsPhotoModalOpen(false)}
+          currentPhoto={selectedItem.photoPath}
+          userName={selectedItem.fullName}
+          targetType="student"
+          targetId={selectedItem.id}
+          onSuccess={() => fetchData()}
+        />
+      )}
 
       {/* Delete Confirmation */}
       <ConfirmDialog
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleDelete}
-        title="Konfirmasi Hapus Data Siswa"
-        message={`Apakah Anda yakin ingin menghapus data siswa "${selectedItem?.fullName}"?`}
+        title="Hapus Data Siswa"
+        message={`Apakah Anda yakin ingin menghapus siswa "${selectedItem?.fullName}"? Tindakan ini menggunakan soft delete.`}
       />
 
-      {/* PRD Section 4.1 Error Alert Modal (HTTP 422 Constraint) */}
+      {/* 422 Referential Integrity Warning Modal */}
       <Modal
         isOpen={errorModalOpen}
         onClose={() => setErrorModalOpen(false)}
-        title="Penolakan Penghapusan (Aturan Integritas Relasi)"
+        title="Penghapusan Ditolak (Proteksi Integritas Relasi)"
       >
         <div className="space-y-4">
-          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-            <p className="font-bold mb-1">Operasi Ditolak Sistem (HTTP 422):</p>
-            <p>{errorMessage}</p>
+          <div className="flex items-start gap-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="text-sm text-amber-800">
+              <strong className="block font-semibold">Pelanggaran Referential Constraint (HTTP 422)</strong>
+              {errorMessage}
+            </div>
           </div>
           <p className="text-xs text-gray-500">
             Sesuai PRD Bagian 4.1: "Data siswa tidak dapat dihapus karena memiliki riwayat kelas, presensi, atau nilai aktif."
@@ -384,4 +433,3 @@ export default function StudentsPage() {
     </div>
   );
 }
-

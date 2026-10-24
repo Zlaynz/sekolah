@@ -59,6 +59,7 @@ export function AuthProvider({ children }) {
         teacherId: response.data.teacherId,
         studentId: response.data.studentId,
         classId: response.data.classId,
+        photoPath: response.data.photoPath,
       };
 
       localStorage.setItem('token', newToken);
@@ -89,6 +90,15 @@ export function AuthProvider({ children }) {
     toast.success('Berhasil logout.');
   }, [navigate]);
 
+  const updatePhoto = useCallback((newPhotoPath) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, photoPath: newPhotoPath };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const hasRole = useCallback(
     (roles) => {
       if (!user) return false;
@@ -109,6 +119,7 @@ export function AuthProvider({ children }) {
     logout,
     hasRole,
     getDashboardPath,
+    updatePhoto,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

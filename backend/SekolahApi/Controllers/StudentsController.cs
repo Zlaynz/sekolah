@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SekolahApi.Data;
@@ -18,10 +20,12 @@ namespace SekolahApi.Controllers
     public class StudentsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public StudentsController(AppDbContext context)
+        public StudentsController(AppDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         [HttpGet]
@@ -69,6 +73,7 @@ namespace SekolahApi.Controllers
                     Status = s.Status,
                     CurrentClassName = s.ClassStudents.Select(cs => cs.Class.ClassName).FirstOrDefault(),
                     CurrentClassId = s.ClassStudents.Select(cs => cs.ClassId).FirstOrDefault(),
+                    PhotoPath = s.User != null ? s.User.PhotoPath : null,
                     CreatedAt = s.CreatedAt
                 });
 
@@ -101,6 +106,7 @@ namespace SekolahApi.Controllers
                 Status = s.Status,
                 CurrentClassName = s.ClassStudents.Select(cs => cs.Class.ClassName).FirstOrDefault(),
                 CurrentClassId = s.ClassStudents.Select(cs => cs.ClassId).FirstOrDefault(),
+                PhotoPath = s.User?.PhotoPath,
                 CreatedAt = s.CreatedAt
             });
         }
@@ -195,6 +201,59 @@ namespace SekolahApi.Controllers
 
             return Ok(new { message = "Data siswa berhasil dihapus (soft delete)." });
         }
+
+        [HttpPost("{id}/photo")]
+        public async Task<IActionResult> UploadPhoto(int id, IFormFile file)
+        {
+            var student = await _context.Students.Include(s => s.User).FirstOrDefaultAsync(s => s.Id == id);
+            if (student == null) return NotFound(new { message = "Siswa tidak ditemukan." });
+
+            var studentIdClaim = User.FindFirst("StudentId")?.Value;
+            if (!User.IsInRole("ADMIN") && studentIdClaim != id.ToString())
+            {
+                return Forbid();
+            }
+
+            if (student.User == null)
+            {
+                return BadRequest(new { message = "Siswa belum memiliki akun pengguna tertaut." });
+            }
+
+            var (success, filePath, errorMessage) = await FileUploadHelper.SavePhotoAsync(file, _env, "photos");
+            if (!success)
+            {
+                return BadRequest(new { message = errorMessage });
+            }
+
+            FileUploadHelper.DeleteFile(student.User.PhotoPath, _env);
+            student.User.PhotoPath = filePath;
+            student.User.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Foto siswa berhasil diunggah.", photoPath = filePath });
+        }
+
+        [HttpDelete("{id}/photo")]
+        public async Task<IActionResult> DeletePhoto(int id)
+        {
+            var student = await _context.Students.Include(s => s.User).FirstOrDefaultAsync(s => s.Id == id);
+            if (student == null) return NotFound(new { message = "Siswa tidak ditemukan." });
+
+            var studentIdClaim = User.FindFirst("StudentId")?.Value;
+            if (!User.IsInRole("ADMIN") && studentIdClaim != id.ToString())
+            {
+                return Forbid();
+            }
+
+            if (student.User != null && !string.IsNullOrEmpty(student.User.PhotoPath))
+            {
+                FileUploadHelper.DeleteFile(student.User.PhotoPath, _env);
+                student.User.PhotoPath = null;
+                student.User.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(new { message = "Foto siswa berhasil dihapus." });
+        }
     }
 }
-

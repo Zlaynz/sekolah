@@ -5,7 +5,7 @@ Sistem Informasi Akademik (SIAKAD) Penilaian dan Presensi Siswa Sekolah Menengah
 Aplikasi ini dibangun menggunakan arsitektur modern:
 * **Frontend:** React 18, Vite, Tailwind CSS v4, React Router v6, Axios, Lucide Icons.
 * **Backend:** C# .NET 8 ASP.NET Core Web API, Entity Framework Core (Pomelo MySQL), JWT Authentication.
-* **Database:** MySQL Server (Database: `sekolah_db`, Port: `3306`, User: `root` tanpa password).
+* **Database:** MySQL Server 9 (Database: `sekolah_db`, Port: `3306`, User: `root` tanpa password).
 
 ---
 

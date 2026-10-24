@@ -13,6 +13,7 @@ namespace SekolahApi.Models.DTOs.Teachers
         public Gender Gender { get; set; }
         public TeacherPosition Position { get; set; }
         public string? SignaturePath { get; set; }
+        public string? PhotoPath { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
@@ -23,6 +24,7 @@ namespace SekolahApi.Models.DTOs.Teachers
         public Gender Gender { get; set; }
         public TeacherPosition Position { get; set; } = TeacherPosition.GURU;
         public string? SignaturePath { get; set; }
+        public string? PhotoPath { get; set; }
         public string? Username { get; set; }
         public string? Password { get; set; }
     }
@@ -34,6 +36,7 @@ namespace SekolahApi.Models.DTOs.Teachers
         public Gender Gender { get; set; }
         public TeacherPosition Position { get; set; }
         public string? SignaturePath { get; set; }
+        public string? PhotoPath { get; set; }
     }
 }
 

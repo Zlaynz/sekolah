@@ -88,7 +88,8 @@ namespace SekolahApi.Services.Auth
                 DisplayName = displayName,
                 TeacherId = teacherId,
                 StudentId = studentId,
-                ClassId = classId
+                ClassId = classId,
+                PhotoPath = user.PhotoPath
             };
         }
 
@@ -131,7 +132,8 @@ namespace SekolahApi.Services.Auth
                 Role = user.Role,
                 DisplayName = user.Teacher?.FullName ?? user.Student?.FullName ?? user.Username,
                 TeacherId = user.Teacher?.Id,
-                StudentId = user.Student?.Id
+                StudentId = user.Student?.Id,
+                PhotoPath = user.PhotoPath
             };
         }
 

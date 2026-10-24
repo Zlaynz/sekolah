@@ -137,6 +137,24 @@ if (app.Environment.IsDevelopment() || true)
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sekolah SMP API v1"));
 }
 
+// Static Files for Uploads (e.g. Profile Photos)
+var uploadsDir = Path.Combine(app.Environment.ContentRootPath, "uploads");
+if (!Directory.Exists(uploadsDir))
+{
+    Directory.CreateDirectory(uploadsDir);
+}
+var photosDir = Path.Combine(uploadsDir, "photos");
+if (!Directory.Exists(photosDir))
+{
+    Directory.CreateDirectory(photosDir);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsDir),
+    RequestPath = "/uploads"
+});
+
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();

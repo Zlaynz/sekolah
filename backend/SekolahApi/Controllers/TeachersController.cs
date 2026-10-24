@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SekolahApi.Data;
@@ -18,10 +20,12 @@ namespace SekolahApi.Controllers
     public class TeachersController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public TeachersController(AppDbContext context)
+        public TeachersController(AppDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         [HttpGet]
@@ -48,6 +52,7 @@ namespace SekolahApi.Controllers
                     Gender = t.Gender,
                     Position = t.Position,
                     SignaturePath = t.SignaturePath,
+                    PhotoPath = t.User != null ? t.User.PhotoPath : null,
                     CreatedAt = t.CreatedAt
                 });
 
@@ -74,6 +79,7 @@ namespace SekolahApi.Controllers
                 Gender = t.Gender,
                 Position = t.Position,
                 SignaturePath = t.SignaturePath,
+                PhotoPath = t.User?.PhotoPath,
                 CreatedAt = t.CreatedAt
             });
         }
@@ -156,6 +162,59 @@ namespace SekolahApi.Controllers
 
             return Ok(new { message = "Data guru berhasil dihapus (soft delete)." });
         }
+
+        [HttpPost("{id}/photo")]
+        public async Task<IActionResult> UploadPhoto(int id, IFormFile file)
+        {
+            var teacher = await _context.Teachers.Include(t => t.User).FirstOrDefaultAsync(t => t.Id == id);
+            if (teacher == null) return NotFound(new { message = "Guru tidak ditemukan." });
+
+            var teacherIdClaim = User.FindFirst("TeacherId")?.Value;
+            if (!User.IsInRole("ADMIN") && teacherIdClaim != id.ToString())
+            {
+                return Forbid();
+            }
+
+            if (teacher.User == null)
+            {
+                return BadRequest(new { message = "Guru belum memiliki akun pengguna tertaut." });
+            }
+
+            var (success, filePath, errorMessage) = await FileUploadHelper.SavePhotoAsync(file, _env, "photos");
+            if (!success)
+            {
+                return BadRequest(new { message = errorMessage });
+            }
+
+            FileUploadHelper.DeleteFile(teacher.User.PhotoPath, _env);
+            teacher.User.PhotoPath = filePath;
+            teacher.User.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Foto guru berhasil diunggah.", photoPath = filePath });
+        }
+
+        [HttpDelete("{id}/photo")]
+        public async Task<IActionResult> DeletePhoto(int id)
+        {
+            var teacher = await _context.Teachers.Include(t => t.User).FirstOrDefaultAsync(t => t.Id == id);
+            if (teacher == null) return NotFound(new { message = "Guru tidak ditemukan." });
+
+            var teacherIdClaim = User.FindFirst("TeacherId")?.Value;
+            if (!User.IsInRole("ADMIN") && teacherIdClaim != id.ToString())
+            {
+                return Forbid();
+            }
+
+            if (teacher.User != null && !string.IsNullOrEmpty(teacher.User.PhotoPath))
+            {
+                FileUploadHelper.DeleteFile(teacher.User.PhotoPath, _env);
+                teacher.User.PhotoPath = null;
+                teacher.User.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(new { message = "Foto guru berhasil dihapus." });
+        }
     }
 }
-

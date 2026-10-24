@@ -3,8 +3,10 @@ import api from '../../api/axios';
 import DataTable from '../../components/common/DataTable';
 import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import UserAvatar from '../../components/common/UserAvatar';
+import PhotoUploadModal from '../../components/common/PhotoUploadModal';
 import toast from 'react-hot-toast';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Camera, AlertTriangle } from 'lucide-react';
 
 export default function TeachersPage() {
   const [data, setData] = useState([]);
@@ -18,6 +20,7 @@ export default function TeachersPage() {
   // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -95,6 +98,25 @@ export default function TeachersPage() {
   };
 
   const columns = [
+    {
+      key: 'photo',
+      label: 'Foto',
+      render: (_, row) => (
+        <div
+          onClick={() => {
+            setSelectedItem(row);
+            setIsPhotoModalOpen(true);
+          }}
+          className="cursor-pointer group flex items-center gap-1.5"
+          title="Klik untuk ubah foto guru"
+        >
+          <UserAvatar photoPath={row.photoPath} name={row.fullName} size="sm" />
+          <span className="text-[11px] text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
+            Ubah
+          </span>
+        </div>
+      ),
+    },
     { key: 'nip', label: 'NIP / NIK', render: (val) => val || '-' },
     { key: 'fullName', label: 'Nama Lengkap & Gelar' },
     {
@@ -119,7 +141,7 @@ export default function TeachersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Data Guru & Tenaga Pendidik</h1>
-          <p className="text-sm text-gray-500">Pengelolaan profil pengajar, wali kelas, wakasek, dan kepala sekolah</p>
+          <p className="text-sm text-gray-500">Pengelolaan profil pengajar, foto profil, wali kelas, wakasek, dan kepala sekolah</p>
         </div>
         <button
           onClick={handleOpenCreate}
@@ -147,12 +169,23 @@ export default function TeachersPage() {
             <button
               onClick={() => {
                 setSelectedItem(row);
+                setIsPhotoModalOpen(true);
+              }}
+              title="Unggah / Ubah Foto Guru"
+              className="text-gray-500 hover:text-indigo-600 p-1"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => {
+                setSelectedItem(row);
                 setNip(row.nip || '');
                 setFullName(row.fullName);
                 setGender(row.gender);
                 setPosition(row.position);
                 setIsModalOpen(true);
               }}
+              title="Edit Data Guru"
               className="text-gray-500 hover:text-indigo-600 p-1"
             >
               <Edit className="w-4 h-4" />
@@ -162,6 +195,7 @@ export default function TeachersPage() {
                 setSelectedItem(row);
                 setIsConfirmOpen(true);
               }}
+              title="Hapus Data Guru"
               className="text-gray-500 hover:text-red-600 p-1"
             >
               <Trash2 className="w-4 h-4" />
@@ -174,73 +208,71 @@ export default function TeachersPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={selectedItem ? 'Edit Data Guru' : 'Tambah Guru & Akun Pengguna'}
+        title={selectedItem ? 'Edit Data Guru' : 'Tambah Guru Baru'}
       >
         <form onSubmit={handleSave} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">NIP / NIK (Opsional)</label>
+            <input
+              type="text"
+              placeholder="Contoh: 19800101 200501 1 001"
+              value={nip}
+              onChange={(e) => setNip(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Nama Lengkap & Gelar</label>
             <input
               type="text"
               required
-              placeholder="Contoh: Drs. Budi Santoso, M.Pd"
+              placeholder="Contoh: Budi Santoso, S.Pd."
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">NIP / NIK</label>
-              <input
-                type="text"
-                placeholder="198001012005011001"
-                value={nip}
-                onChange={(e) => setNip(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono"
-              />
-            </div>
-
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
               <select
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               >
-                <option value="L">Laki-laki (L)</option>
-                <option value="P">Perempuan (P)</option>
+                <option value="L">Laki-laki</option>
+                <option value="P">Perempuan</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Jabatan Struktural</label>
+              <select
+                value={position}
+                onChange={(e) => setPosition(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
+                <option value="GURU">Guru Pengampu</option>
+                <option value="WAKASEK">Wakil Kepala Sekolah</option>
+                <option value="KEPSEK">Kepala Sekolah</option>
               </select>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Jabatan Sekolah</label>
-            <select
-              value={position}
-              onChange={(e) => setPosition(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="GURU">Guru Mata Pelajaran</option>
-              <option value="WAKASEK">Wakasek Kurikulum</option>
-              <option value="KEPSEK">Kepala Sekolah</option>
-            </select>
-          </div>
-
           {!selectedItem && (
-            <div className="pt-2 border-t border-gray-100 space-y-3">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Akun Login (Opsional)
-              </p>
+            <div className="pt-3 border-t border-gray-100 space-y-3">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kredensial Akun Login (Opsional)</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700">Username</label>
+                  <label className="block text-xs font-medium text-gray-700">Username Akun</label>
                   <input
                     type="text"
-                    placeholder="guru_budi"
+                    placeholder="Contoh: guru_budi"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    className="mt-1 block w-full px-3 py-1.5 border border-gray-300 rounded-lg sm:text-sm"
                   />
                 </div>
                 <div>
@@ -250,18 +282,18 @@ export default function TeachersPage() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    className="mt-1 block w-full px-3 py-1.5 border border-gray-300 rounded-lg sm:text-sm"
                   />
                 </div>
               </div>
             </div>
           )}
 
-          <div className="pt-4 flex justify-end gap-2">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Batal
             </button>
@@ -269,34 +301,50 @@ export default function TeachersPage() {
               type="submit"
               className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold"
             >
-              Simpan
+              Simpan Data Guru
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Delete Confirmation */}
+      {/* Photo Upload Modal */}
+      {selectedItem && (
+        <PhotoUploadModal
+          isOpen={isPhotoModalOpen}
+          onClose={() => setIsPhotoModalOpen(false)}
+          currentPhoto={selectedItem.photoPath}
+          userName={selectedItem.fullName}
+          targetType="teacher"
+          targetId={selectedItem.id}
+          onSuccess={() => fetchData()}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleDelete}
-        title="Konfirmasi Hapus Data Guru"
-        message={`Apakah Anda yakin ingin menghapus data guru "${selectedItem?.fullName}"?`}
+        title="Hapus Data Guru"
+        message={`Apakah Anda yakin ingin menghapus data guru "${selectedItem?.fullName}"? Tindakan ini menggunakan soft delete.`}
       />
 
-      {/* PRD Section 4.1 Error Alert Modal (HTTP 422 Constraint) */}
+      {/* Referential Constraint 422 Error Modal */}
       <Modal
         isOpen={errorModalOpen}
         onClose={() => setErrorModalOpen(false)}
-        title="Penolakan Penghapusan (Aturan Integritas Relasi)"
+        title="Penghapusan Ditolak (Proteksi Integritas Relasi)"
       >
         <div className="space-y-4">
-          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-            <p className="font-bold mb-1">Operasi Ditolak Sistem (HTTP 422):</p>
-            <p>{errorMessage}</p>
+          <div className="flex items-start gap-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="text-sm text-amber-800">
+              <strong className="block font-semibold">Pelanggaran Referential Constraint (HTTP 422)</strong>
+              {errorMessage}
+            </div>
           </div>
           <p className="text-xs text-gray-500">
-            Sesuai PRD Bagian 4.1: "Data guru tidak dapat dihapus karena masih terdaftar sebagai wali kelas atau pengampu mata pelajaran aktif."
+            Guru ini masih tercatat aktif sebagai wali kelas atau mengampu mata pelajaran pada rombel tertentu. Harap ganti penugasan guru terlebih dahulu sebelum menghapus.
           </p>
           <div className="flex justify-end">
             <button
@@ -311,4 +359,3 @@ export default function TeachersPage() {
     </div>
   );
 }
-
